@@ -10,21 +10,23 @@ $last_name   = trim($_GET['last_name']   ?? '');
 
 try {
     if ($user_type === 'Guest') {
-        // All three name parts are required
-        if ($first_name === '' || $middle_name === '' || $last_name === '') {
-            echo json_encode(['ok' => false, 'message' => 'First, middle, and last name are required for guests.', 'user' => null]);
+        if ($first_name === '' || $last_name === '') {
+            echo json_encode(['ok' => false, 'message' => 'First and last name are required for guests.', 'user' => null]);
             exit;
         }
 
         $stmt = pdo()->prepare(
             'SELECT * FROM visitors
               WHERE first_name  = ?
-                AND middle_name = ?
                 AND last_name   = ?
+                AND (
+                    (? = "" AND (middle_name IS NULL OR middle_name = ""))
+                    OR middle_name = ?
+                )
                 AND (id_number IS NULL OR id_number = "")
               LIMIT 1'
         );
-        $stmt->execute([$first_name, $middle_name, $last_name]);
+        $stmt->execute([$first_name, $last_name, $middle_name, $middle_name]);
     } else {
         if ($id_number === '') {
             echo json_encode(['ok' => false, 'message' => 'Missing ID number', 'user' => null]);
