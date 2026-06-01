@@ -9,7 +9,7 @@ define('DB_USER', 'root');
 define('DB_PASS', '');
 
 define('ADMIN_USERNAME', 'admin');
-define('ADMIN_PASSWORD', 'admin123'); // Change after deployment
+define('ADMIN_PASSWORD', 'adminpass'); // Change after deployment
 
 date_default_timezone_set('Asia/Manila');
 

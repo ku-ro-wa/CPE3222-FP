@@ -8,6 +8,9 @@ $q          = trim($_GET['q']          ?? '');
 $search_by  = trim($_GET['search_by']  ?? '');
 $date_from  = trim($_GET['date_from']  ?? '');
 $date_to    = trim($_GET['date_to']    ?? '');
+$time_from  = trim($_GET['time_from']  ?? '');
+$time_to    = trim($_GET['time_to']    ?? '');
+
 
 $where  = [];
 $params = [];
@@ -30,13 +33,15 @@ if ($q !== '') {
         $params   = [...$params, ...array_fill(0, 8, $like)];
     }
 }
-if ($date_from !== '') {
-    $where[]  = 'DATE(c.check_in_time) >= ?';
-    $params[] = $date_from;
+if ($date_from !== '' || $time_from !== '') {
+    $from_dt = ($date_from ?: date('Y-m-d')) . ' ' . ($time_from ?: '00:00');
+    $where[]  = 'c.check_in_time >= ?';
+    $params[] = $from_dt;
 }
-if ($date_to !== '') {
-    $where[]  = 'DATE(c.check_in_time) <= ?';
-    $params[] = $date_to;
+if ($date_to !== '' || $time_to !== '') {
+    $to_dt   = ($date_to ?: date('Y-m-d')) . ' ' . ($time_to ?: '23:59');
+    $where[]  = 'c.check_in_time <= ?';
+    $params[] = $to_dt;
 }
 
 $sql = 'SELECT c.id AS check_in_id, c.check_in_time, c.check_out_time,
@@ -58,8 +63,8 @@ $userStmt = $pdo->query('SELECT id, id_number, first_name, middle_name, last_nam
 $users = $userStmt->fetchAll();
 
 $totalUsers  = (int)$pdo->query('SELECT COUNT(*) FROM visitors')->fetchColumn();
-$totalVisits = (int)$pdo->query('SELECT COUNT(*) FROM check_ins')->fetchColumn();
-$activeIn    = (int)$pdo->query('SELECT COUNT(*) FROM check_ins WHERE check_out_time IS NULL')->fetchColumn();
+//$totalVisits = (int)$pdo->query('SELECT COUNT(*) FROM check_ins')->fetchColumn();
+//$activeIn    = (int)$pdo->query('SELECT COUNT(*) FROM check_ins WHERE check_out_time IS NULL')->fetchColumn();
 ?>
 <!doctype html>
 <html lang="en">
@@ -139,21 +144,28 @@ $activeIn    = (int)$pdo->query('SELECT COUNT(*) FROM check_ins WHERE check_out_
               <label>To Date</label>
               <input type="date" name="date_to" value="<?= e($date_to) ?>">
             </div>
-
+          <div>
+            <label>From Time</label>
+            <input type="time" name="time_from" value="<?= e($time_from) ?>">
+          </div>
+          <div>
+            <label>To Time</label>
+            <input type="time" name="time_to" value="<?= e($time_to) ?>">
+          </div>
             <div class="actions" style="align-self:end;">
               <button class="btn btn-primary" type="submit">Search<img src="../images/search.png" class="h-icon-2"></button>
               <a class="btn btn-primary" href="dashboard.php">Reset</a>
             </div>
 
-            <span class="total">Total Users: <?= $totalUsers ?></span>
+            
 
         </form>
         <div class="table-wrap" style="margin-top:16px;">
           <table>
             <thead>
               <tr>
-                <th>Check In</th>
-                <th>Check Out</th>
+                <th>Sign In</th>
+                <th>Sign Out</th>
                 <th>Status</th>
                 <th>ID Number</th>
                 <th>Name</th>
@@ -181,7 +193,7 @@ $activeIn    = (int)$pdo->query('SELECT COUNT(*) FROM check_ins WHERE check_out_
                   <td><?= e($row['barangay']) ?>, <?= e($row['city']) ?>, <?= e($row['province']) ?></td>
                   <td><?= e($row['phone_number']) ?></td>
                   <td><?= e($row['email']) ?></td>
-                  <td class="actions">
+                  <td>
                     <a class="btn btn-danger" href="user_delete.php?id=<?= (int)$row['visitor_id'] ?>" onclick="return confirm('Delete this user and all related visits?')">Delete<img src="../images/delete.png" class="h-icon-2"></a>
                   </td>
                 </tr>
@@ -197,6 +209,9 @@ $activeIn    = (int)$pdo->query('SELECT COUNT(*) FROM check_ins WHERE check_out_
             <img src="../images/user-list.png" class="h-icon">
             <h2>User Directory</h2>
           </div>
+        </div>
+        <div style="margin-top: 30px;">
+          <span class="total">Total Users: <?= $totalUsers ?></span>
         </div>
         <div class="table-wrap" style="margin-top:16px;">
           <table>
@@ -221,7 +236,7 @@ $activeIn    = (int)$pdo->query('SELECT COUNT(*) FROM check_ins WHERE check_out_
                   <td><?= e($u['barangay']) ?>, <?= e($u['city']) ?>, <?= e($u['province']) ?></td>
                   <td><?= e($u['phone_number']) ?></td>
                   <td><?= e($u['email']) ?></td>
-                  <td class="actions">
+                  <td>
                     <a class="btn btn-danger" href="user_delete.php?id=<?= (int)$u['id'] ?>" onclick="return confirm('Delete this user and all related visits?')">Delete<img src="../images/delete.png" class="h-icon-2"></a>
                   </td>
                 </tr>

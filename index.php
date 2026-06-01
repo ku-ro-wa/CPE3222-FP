@@ -86,33 +86,20 @@ $error = flash('error');
                 <div>
                   <label for="usc_middle_name">Middle Name *</label>
                   <input id="usc_middle_name" name="middle_name" type="text"
-                         placeholder="Middle Name">
+                         placeholder="Middle Name" required>
                 </div>
                 <div>
                   <label for="usc_last_name">Last Name *</label>
                   <input id="usc_last_name" name="last_name" type="text"
                          placeholder="Last Name" required>
                 </div>
-              </div>
-              <div class="grid grid-2">
+              
 
                 <div>
                   <label for="usc_id_display">ID Number *</label>
                   <input id="usc_id_display" name="id_number" type="text"
                          placeholder="e.g. 23101234" required>
                 </div>
-
-                <div>
-                  <label for="usc_user_type">User *</label>
-                  <select id="usc_user_type" name="user_type" required>
-                    <option value="" disabled selected>Select User</option>
-                    <option>Student</option>
-                    <option>Faculty</option>
-                    <option>Staff</option>
-                  </select>
-                </div>
-
-                
 
                 <div>
                   <label for="usc_contact_number">Contact Number *</label>
@@ -126,9 +113,7 @@ $error = flash('error');
                          placeholder="name@example.com" required>
                 </div>
 
-              </div>
-
-              <div class="grid grid-3" style="margin-top:14px;">
+              
                 <div>
                   <label for="usc_barangay">Barangay *</label>
                   <input id="usc_barangay" name="barangay" type="text"
@@ -157,6 +142,9 @@ $error = flash('error');
               <button type="submit" class="btn btn-warning hide"
                       id="usc_signOutBtn"
                       onclick="return uscPrepareAction('signout')">Sign Out <img src="images/logout.png" class="h-icon-2"></button>
+              <button type="button" class="btn btn-primary hide"
+                      id="usc_cancelBtn"
+                      onclick="uscCancelPanel()"> Cancel </button>
             </div>
           </form>
         </div><!-- /USC card -->
@@ -219,7 +207,7 @@ $error = flash('error');
                 <div>
                   <label for="guest_mname_display">Middle Name *</label>
                   <input id="guest_mname_display" name="middle_name" type="text"
-                         placeholder="Middle Name">
+                         placeholder="Middle Name" required>
                 </div>
                 <div>
                   <label for="guest_lname_display">Last Name *</label>
@@ -271,6 +259,9 @@ $error = flash('error');
               <button type="submit" class="btn btn-warning hide"
                       id="guest_signOutBtn"
                       onclick="return guestPrepareAction('signout')">Sign Out <img src="images/logout.png" class="h-icon-2"></button>
+              <button type="button" class="btn btn-primary hide"
+                      id="guest_cancelBtn"
+                      onclick="guestCancelPanel()"> Cancel </button>
             </div>
           </form>
         </div><!-- /Guest card -->

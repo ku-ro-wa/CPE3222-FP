@@ -17,19 +17,22 @@ function validateUscForm() {
   const errors = [];
   const get = id => document.getElementById(id)?.value.trim() ?? '';
 
-  const firstName = get('usc_first_name');
+  const firstName  = get('usc_first_name');
   const middleName = get('usc_middle_name');
   const lastName   = get('usc_last_name');
   const idNumber   = get('usc_id_display');
   const phone      = get('usc_contact_number');
   const email      = get('usc_email');
 
-  if (firstName  && !isValidName(firstName))   errors.push('First name contains invalid characters.');
-  if (middleName && !isValidName(middleName))  errors.push('Middle name contains invalid characters.');
-  if (lastName   && !isValidName(lastName))    errors.push('Last name contains invalid characters.');
-  if (idNumber   && !isValidId(idNumber))      errors.push('ID number must be numeric.');
-  if (phone      && !isValidPhone(phone))      errors.push('Phone number must be 7–15 digits.');
-  if (email      && !isValidEmail(email))      errors.push('Email must contain an @ symbol and a valid domain.');
+  if (!firstName)                            errors.push('First name is required.');
+  else if (!isValidName(firstName))          errors.push('First name contains invalid characters.');
+  if (!middleName)                           errors.push('Middle name is required.');
+  else if (!isValidName(middleName))         errors.push('Middle name contains invalid characters.');
+  if (!lastName)                             errors.push('Last name is required.');
+  else if (!isValidName(lastName))           errors.push('Last name contains invalid characters.');
+  if (idNumber   && !isValidId(idNumber))    errors.push('ID number must be numeric.');
+  if (phone      && !isValidPhone(phone))    errors.push('Phone number must be 7–15 digits.');
+  if (email      && !isValidEmail(email))    errors.push('Email must contain an @ symbol and a valid domain.');
 
   showErrors('usc_statusBox', errors);
   return errors.length === 0;
@@ -45,11 +48,14 @@ function validateGuestForm() {
   const phone      = get('guest_contact_number');
   const email      = get('guest_email');
 
-  if (firstName  && !isValidName(firstName))   errors.push('First name contains invalid characters.');
-  if (middleName && !isValidName(middleName))  errors.push('Middle name contains invalid characters.');
-  if (lastName   && !isValidName(lastName))    errors.push('Last name contains invalid characters.');
-  if (phone      && !isValidPhone(phone))      errors.push('Phone number must be 7–15 digits.');
-  if (email      && !isValidEmail(email))      errors.push('Email must contain an @ symbol and a valid domain.');
+  if (!firstName)                            errors.push('First name is required.');
+  else if (!isValidName(firstName))          errors.push('First name contains invalid characters.');
+  if (!middleName)                           errors.push('Middle name is required.');
+  else if (!isValidName(middleName))         errors.push('Middle name contains invalid characters.');
+  if (!lastName)                             errors.push('Last name is required.');
+  else if (!isValidName(lastName))           errors.push('Last name contains invalid characters.');
+  if (phone      && !isValidPhone(phone))    errors.push('Phone number must be 7–15 digits.');
+  if (email      && !isValidEmail(email))    errors.push('Email must contain an @ symbol and a valid domain.');
 
   showErrors('guest_statusBox', errors);
   return errors.length === 0;
@@ -67,6 +73,7 @@ async function lookupUser() {
   const signInBtn   = document.getElementById('usc_signInBtn');
   const signOutBtn  = document.getElementById('usc_signOutBtn');
   const registerBtn = document.getElementById('usc_registerBtn');
+  const cancelBtn   = document.getElementById('usc_cancelBtn');
 
   if (!id) {
     statusBox.innerHTML = '<div class="alert alert-error">Please enter an ID number first.</div>';
@@ -98,6 +105,7 @@ async function lookupUser() {
       registerBtn.classList.add('hide');
       signInBtn.classList.remove('hide');
       signOutBtn.classList.remove('hide');
+      cancelBtn.classList.remove('hide');
     } else {
       uscClearForm();
       uscSetReadonly(false);
@@ -107,6 +115,7 @@ async function lookupUser() {
       registerBtn.classList.remove('hide');
       signInBtn.classList.add('hide');
       signOutBtn.classList.add('hide');
+      cancelBtn.classList.remove('hide');
     }
   } catch {
     statusBox.innerHTML = '<div class="alert alert-error">Unable to reach the lookup service. Please try again.</div>';
@@ -121,14 +130,10 @@ function uscFillForm(user) {
     const el = document.getElementById('usc_' + k);
     if (el) el.value = user[k] || '';
   });
-  // DB column is phone_number; element ID is usc_contact_number
   const phoneEl = document.getElementById('usc_contact_number');
   if (phoneEl) phoneEl.value = user.phone_number || '';
-
   const display = document.getElementById('usc_id_display');
   if (display) display.value = user.id_number || '';
-  const userType = document.getElementById('usc_user_type');
-  if (userType) userType.value = user.user_type || 'Student';
 }
 
 function uscClearForm() {
@@ -141,12 +146,10 @@ function uscClearForm() {
   if (phoneEl) phoneEl.value = '';
   const display = document.getElementById('usc_id_display');
   if (display) display.value = '';
-  const userType = document.getElementById('usc_user_type');
-  if (userType) userType.selectedIndex = 0;
 }
 
 function uscSetReadonly(readonly) {
-  const fields = ['first_name', 'middle_name', 'last_name', 'barangay', 'city', 'province', 'email'];
+  const fields = ['first_name', 'middle_name', 'id_display', 'contact_number', 'last_name', 'barangay', 'city', 'province', 'email'];
   fields.forEach(k => {
     const el = document.getElementById('usc_' + k);
     if (el) el.readOnly = readonly;
@@ -158,6 +161,19 @@ function uscPrepareAction(action) {
   const actionField = document.getElementById('usc_action');
   if (actionField) actionField.value = action;
   return true;
+}
+
+function uscCancelPanel() {
+  document.getElementById('usc_formFields').classList.add('hide');
+  document.getElementById('usc_actionBox').classList.add('hide');
+  document.getElementById('usc_statusBox').innerHTML = '';
+  document.getElementById('usc_id_lookup').value = '';
+  uscClearForm();
+  uscSetReadonly(false);
+  document.getElementById('usc_registerBtn').classList.remove('hide');
+  document.getElementById('usc_signInBtn').classList.add('hide');
+  document.getElementById('usc_signOutBtn').classList.add('hide');
+  document.getElementById('usc_cancelBtn').classList.add('hide');
 }
 
 
@@ -172,87 +188,103 @@ async function lookupGuest() {
   const actionBox  = document.getElementById('guest_actionBox');
   const signInBtn  = document.getElementById('guest_signInBtn');
   const signOutBtn = document.getElementById('guest_signOutBtn');
-  const registerBtn= document.getElementById('guest_registerBtn');
+  const registerBtn = document.getElementById('guest_registerBtn');
+  const cancelBtn   = document.getElementById('guest_cancelBtn');
 
-  if (!fname || !lname) {
-    statusBox.innerHTML = '<div class="alert alert-error">Please enter both your first and last name.</div>';
+  if (!fname || !mname || !lname) {
+    statusBox.innerHTML = '<div class="alert alert-error">Please enter your first, middle, and last name.</div>';
     formFields.classList.add('hide');
     actionBox.classList.add('hide');
     return;
   }
 
-  if (!isValidName(fname) || (mname && !isValidName(mname)) || !isValidName(lname)) {
+  if (!isValidName(fname) || !isValidName(mname) || !isValidName(lname)) {
     statusBox.innerHTML = '<div class="alert alert-error">Names must contain only letters, spaces, hyphens, or apostrophes.</div>';
     formFields.classList.add('hide');
     actionBox.classList.add('hide');
     return;
   }
 
-  document.getElementById('guest_first_name').value  = fname;
-  document.getElementById('guest_middle_name').value = mname;
-  document.getElementById('guest_last_name').value   = lname;
+  // Sync lookup values into the hidden fields and display fields
+  document.getElementById('guest_first_name').value    = fname;
+  document.getElementById('guest_middle_name').value   = mname;
+  document.getElementById('guest_last_name').value     = lname;
   document.getElementById('guest_fname_display').value = fname;
   document.getElementById('guest_mname_display').value = mname;
   document.getElementById('guest_lname_display').value = lname;
+
   statusBox.innerHTML = '<div class="alert alert-info">Checking record...</div>';
 
-  const res  = await fetch(
-    'api/lookup.php?first_name=' + encodeURIComponent(fname) +
-    '&last_name='                + encodeURIComponent(lname) +
-    '&user_type=Guest'
-  );
-  const data = await res.json();
+  try {
+    const res  = await fetch(
+      'api/lookup.php?first_name='  + encodeURIComponent(fname) +
+      '&middle_name='               + encodeURIComponent(mname) +
+      '&last_name='                 + encodeURIComponent(lname) +
+      '&user_type=Guest'
+    );
+    const data = await res.json();
 
-  if (data.ok && data.user) {
-    guestFillForm(data.user);
-    guestSetReadonly(true);
-    statusBox.innerHTML = '<div class="alert alert-success">Record found. Please verify your details before signing in or out.</div>';
-    formFields.classList.remove('hide');
-    actionBox.classList.remove('hide');
-    registerBtn.classList.add('hide');
-    signInBtn.classList.remove('hide');
-    signOutBtn.classList.remove('hide');
-  } else {
-    guestClearForm();
-    guestSetReadonly(false);
-    const fnEl = document.getElementById('guest_fname_display');
-    const lnEl = document.getElementById('guest_lname_display');
-    if (fnEl) fnEl.value = fname;
-    if (lnEl) lnEl.value = lname;
-    statusBox.innerHTML = '<div class="alert alert-info">No previous record found. Please complete the registration form.</div>';
-    formFields.classList.remove('hide');
-    actionBox.classList.remove('hide');
-    registerBtn.classList.remove('hide');
-    signInBtn.classList.add('hide');
-    signOutBtn.classList.add('hide');
+    if (data.ok && data.user) {
+      guestFillForm(data.user);
+      guestSetReadonly(true);
+      statusBox.innerHTML = '<div class="alert alert-success">Record found. Please verify your details before signing in or out.</div>';
+      formFields.classList.remove('hide');
+      actionBox.classList.remove('hide');
+      registerBtn.classList.add('hide');
+      cancelBtn.classList.remove('hide');
+      signInBtn.classList.remove('hide');
+      signOutBtn.classList.remove('hide');
+    } else {
+      guestClearForm();
+      guestSetReadonly(false);
+      // Pre-fill name fields from lookup inputs so user doesn't retype
+      document.getElementById('guest_fname_display').value = fname;
+      document.getElementById('guest_mname_display').value = mname;
+      document.getElementById('guest_lname_display').value = lname;
+      statusBox.innerHTML = '<div class="alert alert-info">No previous record found. Please complete the registration form.</div>';
+      formFields.classList.remove('hide');
+      actionBox.classList.remove('hide');
+      registerBtn.classList.remove('hide');
+      cancelBtn.classList.remove('hide');
+      signInBtn.classList.add('hide');
+      signOutBtn.classList.add('hide');
+    }
+  } catch {
+    statusBox.innerHTML = '<div class="alert alert-error">Unable to reach the lookup service. Please try again.</div>';
+    formFields.classList.add('hide');
+    actionBox.classList.add('hide');
   }
 }
 
 function guestFillForm(user) {
-  const fields = ['first_name', 'middle_name', 'last_name', 'barangay', 'city', 'province', 'email'];
+  // Map DB field names to display element IDs (guest uses fname/mname/lname suffix)
+  document.getElementById('guest_fname_display').value = user.first_name  || '';
+  document.getElementById('guest_mname_display').value = user.middle_name || '';
+  document.getElementById('guest_lname_display').value = user.last_name   || '';
+
+  const fields = ['barangay', 'city', 'province', 'email'];
   fields.forEach(k => {
     const el = document.getElementById('guest_' + k);
     if (el) el.value = user[k] || '';
   });
-  // DB column is phone_number; element ID is guest_contact_number
   const phoneEl = document.getElementById('guest_contact_number');
   if (phoneEl) phoneEl.value = user.phone_number || '';
 }
 
 function guestClearForm() {
-  const fields = ['first_name', 'middle_name', 'last_name', 'barangay', 'city', 'province', 'email'];
-  fields.forEach(k => {
-    const el = document.getElementById('guest_' + k);
+  ['guest_fname_display', 'guest_mname_display', 'guest_lname_display',
+   'guest_contact_number', 'guest_email',
+   'guest_barangay', 'guest_city', 'guest_province'].forEach(id => {
+    const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  const phoneEl = document.getElementById('guest_contact_number');
-  if (phoneEl) phoneEl.value = '';
 }
 
 function guestSetReadonly(readonly) {
-  const fields = ['first_name', 'middle_name', 'last_name', 'barangay', 'city', 'province', 'email'];
-  fields.forEach(k => {
-    const el = document.getElementById('guest_' + k);
+  ['guest_fname_display', 'guest_mname_display', 'guest_lname_display',
+   'guest_contact_number', 'guest_email',
+   'guest_barangay', 'guest_city', 'guest_province'].forEach(id => {
+    const el = document.getElementById(id);
     if (el) el.readOnly = readonly;
   });
 }
@@ -262,6 +294,21 @@ function guestPrepareAction(action) {
   const actionField = document.getElementById('guest_action');
   if (actionField) actionField.value = action;
   return true;
+}
+
+function guestCancelPanel() {
+  document.getElementById('guest_formFields').classList.add('hide');
+  document.getElementById('guest_actionBox').classList.add('hide');
+  document.getElementById('guest_statusBox').innerHTML = '';
+  document.getElementById('guest_fname_lookup').value = '';
+  document.getElementById('guest_mname_lookup').value = '';
+  document.getElementById('guest_lname_lookup').value = '';
+  guestClearForm();
+  guestSetReadonly(false);
+  document.getElementById('guest_registerBtn').classList.remove('hide');
+  document.getElementById('guest_signInBtn').classList.add('hide');
+  document.getElementById('guest_signOutBtn').classList.add('hide');
+  document.getElementById('guest_cancelBtn').classList.add('hide');
 }
 
 
@@ -283,6 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('usc_formFields').classList.remove('hide');
       document.getElementById('usc_actionBox').classList.remove('hide');
       document.getElementById('usc_registerBtn').classList.remove('hide');
+      document.getElementById('usc_cancelBtn').classList.remove('hide');
       document.getElementById('usc_signInBtn').classList.add('hide');
       document.getElementById('usc_signOutBtn').classList.add('hide');
       uscSetReadonly(false);
@@ -297,6 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('guest_formFields').classList.remove('hide');
       document.getElementById('guest_actionBox').classList.remove('hide');
       document.getElementById('guest_registerBtn').classList.remove('hide');
+      document.getElementById('guest_cancelBtn').classList.remove('hide');
       document.getElementById('guest_signInBtn').classList.add('hide');
       document.getElementById('guest_signOutBtn').classList.add('hide');
       guestSetReadonly(false);
