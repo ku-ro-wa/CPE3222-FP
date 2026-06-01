@@ -24,15 +24,14 @@ function validateUscForm() {
   const phone      = get('usc_contact_number');
   const email      = get('usc_email');
 
-  if (!firstName)                            errors.push('First name is required.');
-  else if (!isValidName(firstName))          errors.push('First name contains invalid characters.');
-  if (!middleName)                           errors.push('Middle name is required.');
-  else if (!isValidName(middleName))         errors.push('Middle name contains invalid characters.');
-  if (!lastName)                             errors.push('Last name is required.');
-  else if (!isValidName(lastName))           errors.push('Last name contains invalid characters.');
-  if (idNumber   && !isValidId(idNumber))    errors.push('ID number must be numeric.');
-  if (phone      && !isValidPhone(phone))    errors.push('Phone number must be 7–15 digits.');
-  if (email      && !isValidEmail(email))    errors.push('Email must contain an @ symbol and a valid domain.');
+  if (!firstName)                                    errors.push('First name is required.');
+  else if (!isValidName(firstName))                  errors.push('First name contains invalid characters.');
+  if (middleName && !isValidName(middleName))        errors.push('Middle name contains invalid characters.');
+  if (!lastName)                                     errors.push('Last name is required.');
+  else if (!isValidName(lastName))                   errors.push('Last name contains invalid characters.');
+  if (idNumber   && !isValidId(idNumber))            errors.push('ID number must be numeric.');
+  if (phone      && !isValidPhone(phone))            errors.push('Phone number must be 7–15 digits.');
+  if (email      && !isValidEmail(email))            errors.push('Email must contain an @ symbol and a valid domain.');
 
   showErrors('usc_statusBox', errors);
   return errors.length === 0;
@@ -48,14 +47,14 @@ function validateGuestForm() {
   const phone      = get('guest_contact_number');
   const email      = get('guest_email');
 
-  if (!firstName)                            errors.push('First name is required.');
-  else if (!isValidName(firstName))          errors.push('First name contains invalid characters.');
-  if (!middleName)                           errors.push('Middle name is required.');
-  else if (!isValidName(middleName))         errors.push('Middle name contains invalid characters.');
-  if (!lastName)                             errors.push('Last name is required.');
-  else if (!isValidName(lastName))           errors.push('Last name contains invalid characters.');
-  if (phone      && !isValidPhone(phone))    errors.push('Phone number must be 7–15 digits.');
-  if (email      && !isValidEmail(email))    errors.push('Email must contain an @ symbol and a valid domain.');
+if (!firstName)                                    errors.push('First name is required.');
+  else if (!isValidName(firstName))                  errors.push('First name contains invalid characters.');
+  if (middleName && !isValidName(middleName))        errors.push('Middle name contains invalid characters.');
+  if (!lastName)                                     errors.push('Last name is required.');
+  else if (!isValidName(lastName))                   errors.push('Last name contains invalid characters.');
+  if (idNumber   && !isValidId(idNumber))            errors.push('ID number must be numeric.');
+  if (phone      && !isValidPhone(phone))            errors.push('Phone number must be 7–15 digits.');
+  if (email      && !isValidEmail(email))            errors.push('Email must contain an @ symbol and a valid domain.');
 
   showErrors('guest_statusBox', errors);
   return errors.length === 0;
@@ -149,7 +148,7 @@ function uscClearForm() {
 }
 
 function uscSetReadonly(readonly) {
-  const fields = ['first_name', 'middle_name', 'id_display', 'contact_number', 'last_name', 'barangay', 'city', 'province', 'email'];
+  const fields = ['first_name', 'middle_name', 'last_name', 'barangay', 'city', 'province', 'email'];
   fields.forEach(k => {
     const el = document.getElementById('usc_' + k);
     if (el) el.readOnly = readonly;
@@ -191,14 +190,14 @@ async function lookupGuest() {
   const registerBtn = document.getElementById('guest_registerBtn');
   const cancelBtn   = document.getElementById('guest_cancelBtn');
 
-  if (!fname || !mname || !lname) {
-    statusBox.innerHTML = '<div class="alert alert-error">Please enter your first, middle, and last name.</div>';
+  if (!fname || !lname) {
+    statusBox.innerHTML = '<div class="alert alert-error">Please enter your first and last name.</div>';
     formFields.classList.add('hide');
     actionBox.classList.add('hide');
     return;
   }
 
-  if (!isValidName(fname) || !isValidName(mname) || !isValidName(lname)) {
+  if (!isValidName(fname) || (mname && !isValidName(mname)) || !isValidName(lname)) {
     statusBox.innerHTML = '<div class="alert alert-error">Names must contain only letters, spaces, hyphens, or apostrophes.</div>';
     formFields.classList.add('hide');
     actionBox.classList.add('hide');
