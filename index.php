@@ -86,7 +86,7 @@ $error = flash('error');
                 <div>
                   <label for="usc_middle_name">Middle Name</label>
                   <input id="usc_middle_name" name="middle_name" type="text"
-                         placeholder="Middle Name" required>
+                         placeholder="Middle Name">
                 </div>
                 <div>
                   <label for="usc_last_name">Last Name *</label>
@@ -207,7 +207,7 @@ $error = flash('error');
                 <div>
                   <label for="guest_mname_display">Middle Name</label>
                   <input id="guest_mname_display" name="middle_name" type="text"
-                         placeholder="Middle Name" required>
+                         placeholder="Middle Name">
                 </div>
                 <div>
                   <label for="guest_lname_display">Last Name *</label>
