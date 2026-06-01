@@ -205,7 +205,7 @@ $error = flash('error');
                          placeholder="First Name" required>
                 </div>
                 <div>
-                  <label for="guest_mname_display">Middle Name *</label>
+                  <label for="guest_mname_display">Middle Name</label>
                   <input id="guest_mname_display" name="middle_name" type="text"
                          placeholder="Middle Name" required>
                 </div>
