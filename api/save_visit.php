@@ -10,7 +10,7 @@ function redirect_with(string $type, string $message): void {
 $action       = $_POST['action']        ?? '';
 $id_number    = trim($_POST['id_number']    ?? '');
 $first_name   = trim($_POST['first_name']   ?? '');
-$middle_name  = trim($_POST['middle_name']  ?? '');
+$middle_name  = trim($_POST['middle_name']  ?? ''); 
 $last_name    = trim($_POST['last_name']    ?? '');
 $barangay     = trim($_POST['barangay']     ?? '');
 $city         = trim($_POST['city']         ?? '');
@@ -21,12 +21,11 @@ $usertype     = trim($_POST['user_type']    ?? '');
 
 $is_guest = ($usertype === 'Guest');
 
-// USC users must supply an ID; all users must supply full name including middle name
 if (!$is_guest && $id_number === '') {
     redirect_with('error', 'ID number is required for Student, Faculty, or Staff.');
 }
-if ($first_name === '' || $middle_name === '' || $last_name === '') {
-    redirect_with('error', 'First, middle, and last name are all required.');
+if ($first_name === '' || $last_name === '') {
+    redirect_with('error', 'First and last name are required.');
 }
 
 $pdo = pdo();
@@ -50,19 +49,22 @@ function record_visit(PDO $pdo, int $user_id, string $action): void {
 /**
  * Find a user row.
  * USC users  → look up by id_number
- * Guest users → look up by first_name + middle_name + last_name (no id_number)
+ * Guest users → look up by first_name + last_name + middle_name (optional, must match exactly)
  */
 function find_user(PDO $pdo, bool $is_guest, string $id_number, string $first_name, string $middle_name, string $last_name): array|false {
     if ($is_guest) {
         $stmt = $pdo->prepare(
             "SELECT id FROM visitors
-              WHERE first_name  = ?
-                AND middle_name = ?
-                AND last_name   = ?
+              WHERE first_name = ?
+                AND last_name  = ?
+                AND (
+                    (? = '' AND (middle_name IS NULL OR middle_name = ''))
+                    OR middle_name = ?
+                )
                 AND (id_number IS NULL OR id_number = '')
               LIMIT 1"
         );
-        $stmt->execute([$first_name, $middle_name, $last_name]);
+        $stmt->execute([$first_name, $last_name, $middle_name, $middle_name]);
     } else {
         $stmt = $pdo->prepare('SELECT id FROM visitors WHERE id_number = ? LIMIT 1');
         $stmt->execute([$id_number]);
@@ -84,7 +86,6 @@ try {
         $existing = find_user($pdo, $is_guest, $id_number, $first_name, $middle_name, $last_name);
 
         if ($existing) {
-            // Existing record: update contact details and sign in
             $user_id = (int)$existing['id'];
             $stmt = $pdo->prepare(
                 'UPDATE visitors
@@ -93,7 +94,6 @@ try {
             );
             $stmt->execute([$barangay, $city, $province, $phone_number, $email, $user_id]);
         } else {
-            // New user: insert full record
             $stmt = $pdo->prepare(
                 'INSERT INTO visitors
                     (id_number, first_name, middle_name, last_name, barangay, city, province, phone_number, email)
@@ -102,7 +102,7 @@ try {
             $stmt->execute([
                 $is_guest ? null : $id_number,
                 $first_name,
-                $middle_name,
+                $middle_name !== '' ? $middle_name : null,
                 $last_name,
                 $barangay,
                 $city,
